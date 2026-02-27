@@ -3,12 +3,10 @@ package com.example.androiduitesting;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 
@@ -24,53 +22,44 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-public class MainActivityTest {
+public class ShowActivityTest {
     @Rule
-    public ActivityScenarioRule<MainActivity> scenario = new ActivityScenarioRule<MainActivity>(MainActivity.class);
+    public ActivityScenarioRule<MainActivity> scenario = new ActivityScenarioRule<>(MainActivity.class);
 
     @Test
-    public void testAddCity() {
-        // Click on Add City button
+    public void testActivitySwitch() {
+        // Add a city and click on it
         onView(withId(R.id.button_add)).perform(click());
         onView(withId(R.id.editText_name)).perform(ViewActions.typeText("Edmonton"));
-
-        // Click on Confirm
         onView(withId(R.id.button_confirm)).perform(click());
+        onData(is(instanceOf(String.class))).inAdapterView(withId(R.id.city_list)).atPosition(0).perform(click());
 
-        // Check if text "Edmonton" is matched with any of the text displayed on the screen
-        onView(withText("Edmonton")).check(matches(isDisplayed()));
-
+        // Check that ShowActivity is displayed
+        onView(withId(R.id.textView_city)).check(matches(isDisplayed()));
     }
 
     @Test
-    public void testClearCity() {
-        // Add first city to the list
+    public void testCityNameConsistent() {
+        // Add a city and click on it
         onView(withId(R.id.button_add)).perform(click());
         onView(withId(R.id.editText_name)).perform(ViewActions.typeText("Edmonton"));
         onView(withId(R.id.button_confirm)).perform(click());
+        onData(is(instanceOf(String.class))).inAdapterView(withId(R.id.city_list)).atPosition(0).perform(click());
 
-        // Add another city to the list
-        onView(withId(R.id.button_add)).perform(click());
-        onView(withId(R.id.editText_name)).perform(ViewActions.typeText("Vancouver"));
-        onView(withId(R.id.button_confirm)).perform(click());
-
-        // Clear the list
-        onView(withId(R.id.button_clear)).perform(click());
-        onView(withText("Edmonton")).check(doesNotExist());
-        onView(withText("Vancouver")).check(doesNotExist());
+        // Check that the city name shown is correct
+        onView(withId(R.id.textView_city)).check(matches(withText("Edmonton")));
     }
 
     @Test
-    public void testListView() {
-        // Add a city
+    public void testBackButton() {
+        // Add a city and click on it
         onView(withId(R.id.button_add)).perform(click());
         onView(withId(R.id.editText_name)).perform(ViewActions.typeText("Edmonton"));
         onView(withId(R.id.button_confirm)).perform(click());
+        onData(is(instanceOf(String.class))).inAdapterView(withId(R.id.city_list)).atPosition(0).perform(click());
 
-        // Check in the Adapter view (given id of that adapter view) there is a data
-        // (which is an instance of String) located at position zero.
-        // If this data matches the text we provided -> Test should pass
-        // You can also use anything() in place of is(instanceOf(String.class))
-        onData(is(instanceOf(String.class))).inAdapterView(withId(R.id.city_list )).atPosition(0).check(matches((withText("Edmonton"))));
+        // Click back and check we're back on MainActivity
+        onView(withId(R.id.button_back)).perform(click());
+        onView(withId(R.id.button_add)).check(matches(isDisplayed()));
     }
 }
